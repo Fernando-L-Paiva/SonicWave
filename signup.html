@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Cadastro - SonicWave</title>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <img src="img/SonicWave.jpg.webp" alt="SonicWave Logo">
+        </div>
+        <main>
+            <header class="main-header">
+                 <nav class="menu">
+                    <a href="index.html">Home</a>
+                    <a href="about.html">Sobre</a>
+                     <a href="contact.html">Contato</a>
+                </nav> 
+            </header> 
+            <form id="signup">
+                <h1>Cadastro</h1>
+                <label for="name">Nome:</label>
+                <input type="text" id="name" name="name" required>
+
+                <label for="email">E-mail:</label>
+                <input type="email" id="email" name="email" required>
+
+                <label for="cep">CEP:</label>
+                <input type="text" id="cep" name="cep" maxlength="8" required>
+
+                <div id="error-message" style="color: red;"></div>
+
+                <label for="address">Endereço:</label>
+                <input type="text" id="address" name="address" readonly>
+
+                <label for="number">Número:</label>
+                <input type="text" id="number" name="number" required>
+
+                <label for="neighborhood">Bairro:</label>
+                <input type="text" id="neighborhood" name="neighborhood" readonly>
+
+                <label for="city">Cidade:</label>
+                <input type="text" id="city" name="city" readonly>
+
+                <label for="state">Estado:</label>
+                <input type="text" id="state" name="state" readonly>
+
+                <label for="password">Senha:</label>
+                <input type="password" id="password" name="password" required>
+
+                <button type="submit" name="submit">Cadastrar</button>
+
+            </form>
+        </main>
+          
+    </div>
+
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="closeModal">&times;</span>
+            <p>Cadastro realizado com sucesso!</p>
+        </div>
+    </div>
+
+    <script>
+        const cepInput = document.querySelector('#cep');
+        const addressInput = document.querySelector('#address');
+        const neighborhoodInput = document.querySelector('#neighborhood');
+        const cityInput = document.querySelector('#city');
+        const stateInput = document.querySelector('#state');
+        const errorMessage = document.querySelector('#error-message');
+        const signupForm = document.querySelector('#signup');
+
+        // Permitir apenas números no campo CEP
+        cepInput.addEventListener('keypress', (e) => {
+            const onlyNumbers = /[0-9]/;
+            const key = String.fromCharCode(e.keyCode);
+
+            if (!onlyNumbers.test(key)) {
+                e.preventDefault();
+            }
+        });
+
+        // Evento para buscar o endereço ao digitar 8 dígitos no CEP
+        cepInput.addEventListener('keyup', (e) => {
+            const inputValue = e.target.value.replace(/\D/g, ''); // Remover caracteres não numéricos
+
+            if (inputValue.length === 8) {
+                getAddress(inputValue);
+            }
+        });
+
+        // Função para buscar endereço na API ViaCEP
+        const getAddress = async (cep) => {
+            try {
+                const apiUrl = `https://viacep.com.br/ws/${cep}/json/`;
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+
+                if (data.erro) {
+                    showErrorMessage('CEP inválido, tente novamente.');
+                    clearAddressFields();
+                    return;
+                }
+
+                // Preencher os campos com os dados retornados
+                addressInput.value = data.logradouro || '';
+                neighborhoodInput.value = data.bairro || '';
+                cityInput.value = data.localidade || '';
+                stateInput.value = data.uf || '';
+                errorMessage.textContent = ''; // Limpar mensagens de erro anteriores
+            } catch (error) {
+                showErrorMessage('Erro ao buscar informações do CEP.');
+                clearAddressFields();
+            }
+        };
+
+        // Função para mostrar mensagem de erro
+        const showErrorMessage = (msg) => {
+            errorMessage.textContent = msg;
+        };
+
+        // Função para limpar os campos de endereço
+        const clearAddressFields = () => {
+            addressInput.value = '';
+            neighborhoodInput.value = '';
+            cityInput.value = '';
+            stateInput.value = '';
+        };
+
+        // Evento de envio do formulário de cadastro
+        signupForm.addEventListener('submit', (e) => {
+        if (cepInput.value.length !== 8) {
+        e.preventDefault();
+        showErrorMessage('CEP inválido, preencha corretamente.');
+    } else {
+        // Permitir o envio do formulário
+        errorMessage.textContent = '';
+    }
+});
+
+    </script>
+</body>
+</html>

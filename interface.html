@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoundCloud Music Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: white;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            padding: 20px;
+        }
+        .search-bar {
+            margin-bottom: 20px;
+        }
+        .search-bar input {
+            width: 80%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+        }
+        .search-bar button {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #1DB954;
+            color: white;
+            cursor: pointer;
+        }
+        .results {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .track {
+            background-color: #282828;
+            margin: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            width: calc(33% - 20px);
+        }
+        .track img {
+            width: 100%;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SoundCloud Music Search</h1>
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Search for music...">
+            <button onclick="searchMusic()">Search</button>
+        </div>
+        <div class="results" id="results"></div>
+    </div>
+
+    <script>
+        const clientId = 'xtb6CHOQnUcsH4aEddnf6SILQCBnQeAg';
+
+        function searchMusic() {
+            const query = document.getElementById('searchInput').value;
+            fetch(`https://api.soundcloud.com/tracks?client_id=${clientId}&q=${query}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const resultsDiv = document.getElementById('results');
+                    resultsDiv.innerHTML = '';
+                    data.forEach(track => {
+                        const trackDiv = document.createElement('div');
+                        trackDiv.className = 'track';
+                        trackDiv.innerHTML = `
+                            <img src="${track.artwork_url || 'default.jpg'}" alt="${track.title}">
+                            <h3>${track.title}</h3>
+                            <p>${track.user.username}</p>
+                            <audio controls>
+                                <source src="${track.stream_url}?client_id=${clientId}" type="audio/mpeg">
+                                Your browser does not support the audio element.
+                            </audio>
+                        `;
+                        resultsDiv.appendChild(trackDiv);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred: ' + error.message);
+                });
+        }
+    </script>
+</body>
+</html>
